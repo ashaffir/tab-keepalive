@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Local Tab Keepalive</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <h1>Tab Keepalive</h1>
+    <p id="site" class="site">Current tab</p>
+
+    <label class="toggle-row">
+      <input id="enabled" type="checkbox">
+      <span>Keep this tab active</span>
+    </label>
+
+    <p id="status" class="status">Checking…</p>
+
+    <p class="note">
+      Local only. No clicks, no typing, no external requests.
+      Activity runs every ~35–55 seconds.
+    </p>
+  </main>
+
+  <script src="popup.js"></script>
+</body>
+</html>

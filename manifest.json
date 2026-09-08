@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Local Tab Keepalive",
+  "version": "1.0.0",
+  "description": "Locally keeps selected tabs active using harmless page activity. No external network calls.",
+  "permissions": [
+    "alarms",
+    "scripting",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "action": {
+    "default_title": "Local Tab Keepalive",
+    "default_popup": "popup.html"
+  }
+}
