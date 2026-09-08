@@ -1,7 +1,6 @@
 const ALARM_PREFIX = "local-tab-keepalive:";
 const STATE_KEY = "enabledTabs";
 
-// Random interval avoids a rigid activity pattern.
 const MIN_INTERVAL_MS = 35_000;
 const MAX_INTERVAL_MS = 55_000;
 
@@ -69,8 +68,6 @@ async function pulseTab(tabId) {
         const width = Math.max(window.innerWidth, 1);
         const height = Math.max(window.innerHeight, 1);
 
-        // Simulate harmless pointer/mouse movement inside the page.
-        // These are synthetic DOM events; they do not move the OS cursor.
         const x = Math.floor(width * (0.2 + Math.random() * 0.6));
         const y = Math.floor(height * (0.2 + Math.random() * 0.6));
         const target =
@@ -99,14 +96,11 @@ async function pulseTab(tabId) {
             })
           );
         } catch {
-          // Some pages/environments may not expose PointerEvent.
+          // PointerEvent may not exist in some environments.
         }
 
         target.dispatchEvent(new MouseEvent("mousemove", eventInit));
 
-        // Perform an actual tiny scroll, then restore the exact position.
-        // The browser-generated scroll event is often enough for idle handlers
-        // that listen for page activity.
         const originalX = window.scrollX;
         const originalY = window.scrollY;
         const documentHeight = Math.max(
@@ -149,7 +143,6 @@ async function pulseTab(tabId) {
 
     return results?.[0]?.result ?? null;
   } catch (error) {
-    // Chrome internal pages and some restricted pages cannot be scripted.
     console.debug("Keepalive pulse skipped:", error?.message ?? error);
     return null;
   }
@@ -160,14 +153,14 @@ async function enableTab(tab) {
     throw new Error("No usable active tab.");
   }
 
-  const origin = getOrigin(tab.url);
-  if (!origin || !/^https?:$/.test(new URL(tab.url).protocol)) {
+  const parsedUrl = new URL(tab.url);
+  if (!/^https?:$/.test(parsedUrl.protocol)) {
     throw new Error("Only normal HTTP/HTTPS pages are supported.");
   }
 
   const state = await readState();
   state[tab.id] = {
-    origin,
+    origin: parsedUrl.origin,
     enabledAt: Date.now(),
     lastPulseAt: null
   };
@@ -260,7 +253,6 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     const tab = await chrome.tabs.get(tabId);
     const currentOrigin = getOrigin(tab.url);
 
-    // Do not silently continue on a different website if the tab navigates.
     if (!currentOrigin || currentOrigin !== entry.origin) {
       await disableTab(tabId);
       return;
@@ -276,9 +268,42 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       }
     }
 
+    await setBadge(tabId, true);
     await scheduleNext(tabId);
   } catch {
     await disableTab(tabId);
+  }
+});
+
+// Chrome can reset per-tab action state during navigation/reload.
+// Restore the badge whenever an enabled tab reloads or navigates
+// within the same origin. Disable immediately if it changes origin.
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  const state = await readState();
+  const entry = state[tabId];
+
+  if (!entry) {
+    return;
+  }
+
+  const url = changeInfo.url ?? tab.url;
+  const currentOrigin = getOrigin(url);
+
+  if (currentOrigin && currentOrigin !== entry.origin) {
+    await disableTab(tabId);
+    return;
+  }
+
+  if (
+    changeInfo.status === "loading" ||
+    changeInfo.status === "complete" ||
+    Boolean(changeInfo.url)
+  ) {
+    try {
+      await setBadge(tabId, true);
+    } catch {
+      // Ignore transient tab/navigation races.
+    }
   }
 });
 
