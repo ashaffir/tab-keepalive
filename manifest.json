@@ -1,10 +1,14 @@
 {
   "manifest_version": 3,
   "name": "Local Tab Keepalive",
-  "version": "1.0.1",
-  "description": "Locally keeps selected tabs active using harmless page activity. No external network calls.",
+  "version": "3.0.0",
+  "description": "Local layered session keeper with generic session diagnostics and multiple keepalive strategies.",
+  "incognito": "split",
   "permissions": [
     "alarms",
+    "cookies",
+    "debugger",
+    "power",
     "scripting",
     "storage",
     "tabs"

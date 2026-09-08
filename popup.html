@@ -11,16 +11,132 @@
     <h1>Tab Keepalive</h1>
     <p id="site" class="site">Current tab</p>
 
-    <label class="toggle-row">
+    <label class="master-toggle">
       <input id="enabled" type="checkbox">
       <span>Keep this tab active</span>
     </label>
 
-    <p id="status" class="status">Checking…</p>
+    <section id="active-panel" hidden>
+      <div class="assessment">
+        <span>Session assessment</span>
+        <strong id="assessment">Collecting evidence</strong>
+      </div>
 
-    <p class="note">
-      Local only. No clicks, no typing, no external requests.
-      Activity runs every ~35–55 seconds.
+      <p id="status" class="status">Checking…</p>
+
+      <div class="diagnostics">
+        <div>
+          <span>Idle/focus emulation</span>
+          <strong id="idle-status">—</strong>
+        </div>
+        <div>
+          <span>Browser input</span>
+          <strong id="input-status">—</strong>
+        </div>
+        <div>
+          <span>DOM activity</span>
+          <strong id="dom-status">—</strong>
+        </div>
+        <div>
+          <span>Current-page GET</span>
+          <strong id="fetch-status">—</strong>
+        </div>
+        <div>
+          <span>Replayed XHRs</span>
+          <strong id="replay-status">—</strong>
+        </div>
+        <div>
+          <span>Renewal evidence</span>
+          <strong id="renewal-status">None yet</strong>
+        </div>
+        <div>
+          <span>Fixed expiry</span>
+          <strong id="expiry-status">None detected</strong>
+        </div>
+      </div>
+
+      <button id="pulse-now" type="button">Run keepalive now</button>
+
+      <h2>Strategies</h2>
+
+      <label class="option">
+        <input id="idle-emulation" type="checkbox">
+        <span>
+          <strong>Chrome idle/focus emulation</strong>
+          <small>Reports the user as active/unlocked and emulates focus.</small>
+        </span>
+      </label>
+
+      <label class="option">
+        <input id="browser-input" type="checkbox">
+        <span>
+          <strong>Browser-level input</strong>
+          <small>Mouse movement + harmless Shift key events via DevTools.</small>
+        </span>
+      </label>
+
+      <label class="option">
+        <input id="dom-activity" type="checkbox">
+        <span>
+          <strong>DOM activity</strong>
+          <small>Pointer/mouse/focus events and tiny restored scrolling.</small>
+        </span>
+      </label>
+
+      <label class="option">
+        <input id="page-fetch" type="checkbox">
+        <span>
+          <strong>Authenticated current-page GET</strong>
+          <small>Real same-origin request using the page's cookies.</small>
+        </span>
+      </label>
+
+      <label class="option">
+        <input id="replay-xhr" type="checkbox">
+        <span>
+          <strong>Replay observed safe GET XHRs</strong>
+          <small>
+            Aggressive. Replays up to two previously observed same-origin GET
+            XHR requests with their original browser request context.
+          </small>
+        </span>
+      </label>
+
+      <label class="option">
+        <input id="periodic-reload" type="checkbox">
+        <span>
+          <strong>Periodic background reload</strong>
+          <small>Most aggressive. Reloads only while you are not viewing the tab.</small>
+        </span>
+      </label>
+
+      <label class="inline-option">
+        Reload every
+        <select id="reload-minutes">
+          <option value="2">2 minutes</option>
+          <option value="5">5 minutes</option>
+          <option value="10">10 minutes</option>
+          <option value="15">15 minutes</option>
+          <option value="30">30 minutes</option>
+        </select>
+      </label>
+
+      <label class="option">
+        <input id="prevent-sleep" type="checkbox">
+        <span>
+          <strong>Prevent computer sleep</strong>
+          <small>Keeps macOS awake while this option is enabled.</small>
+        </span>
+      </label>
+
+      <p class="warning">
+        Replay and reload are disabled by default because they are more intrusive.
+        A true server-side absolute timeout still cannot be extended generically.
+      </p>
+    </section>
+
+    <p id="disabled-status" class="status">
+      Disabled for this tab.
     </p>
   </main>
 
